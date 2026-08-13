@@ -4,6 +4,7 @@ const BASE_INPUT: Omit<OrderInput, 'platform'> = {
   salePrice: 150000,
   productCost: 65000,
   platformFeePercent: 0,
+  platformOrderFee: 0,
   affiliatePercent: 0,
   adCost: 20000,
   packagingCost: 4000,
