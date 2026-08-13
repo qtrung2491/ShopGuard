@@ -6,6 +6,7 @@ const PARAM_MAP: Record<keyof OrderInput, string> = {
   salePrice: 'price',
   productCost: 'cost',
   platformFeePercent: 'fee',
+  platformOrderFee: 'orderfee',
   affiliatePercent: 'aff',
   adCost: 'ad',
   packagingCost: 'pack',
@@ -16,16 +17,14 @@ const PARAM_MAP: Record<keyof OrderInput, string> = {
   resaleRecoveryPercent: 'recover',
 };
 
-/**
- * Serialize OrderInput into URL search params string
- */
 export function serializeStateToUrl(input: OrderInput): string {
   const params = new URLSearchParams();
-  
+
   params.set(PARAM_MAP.platform, input.platform);
   params.set(PARAM_MAP.salePrice, input.salePrice.toString());
   params.set(PARAM_MAP.productCost, input.productCost.toString());
   params.set(PARAM_MAP.platformFeePercent, input.platformFeePercent.toString());
+  params.set(PARAM_MAP.platformOrderFee, input.platformOrderFee.toString());
   params.set(PARAM_MAP.affiliatePercent, input.affiliatePercent.toString());
   params.set(PARAM_MAP.adCost, input.adCost.toString());
   params.set(PARAM_MAP.packagingCost, input.packagingCost.toString());
@@ -39,9 +38,6 @@ export function serializeStateToUrl(input: OrderInput): string {
   return `${pathname}?${params.toString()}`;
 }
 
-/**
- * Deserialize OrderInput from window.location.search
- */
 export function deserializeStateFromUrl(): Partial<OrderInput> | null {
   if (typeof window === 'undefined') return null;
 
@@ -59,6 +55,7 @@ export function deserializeStateFromUrl(): Partial<OrderInput> | null {
     'salePrice',
     'productCost',
     'platformFeePercent',
+    'platformOrderFee',
     'affiliatePercent',
     'adCost',
     'packagingCost',
