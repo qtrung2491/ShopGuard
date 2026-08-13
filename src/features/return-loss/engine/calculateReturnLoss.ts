@@ -18,6 +18,7 @@ export function calculateReturnLoss(input: OrderInput): OrderAnalysis {
     salePrice: nonNegative(input.salePrice),
     productCost: nonNegative(input.productCost),
     platformFeePercent: percent(input.platformFeePercent),
+    platformOrderFee: nonNegative(input.platformOrderFee),
     affiliatePercent: percent(input.affiliatePercent),
     adCost: nonNegative(input.adCost),
     packagingCost: nonNegative(input.packagingCost),
@@ -32,6 +33,7 @@ export function calculateReturnLoss(input: OrderInput): OrderAnalysis {
     salePrice,
     productCost,
     platformFeePercent,
+    platformOrderFee,
     affiliatePercent,
     adCost,
     packagingCost,
@@ -43,11 +45,13 @@ export function calculateReturnLoss(input: OrderInput): OrderAnalysis {
   } = safeInput;
 
   const platformFee = Math.round(salePrice * (platformFeePercent / 100));
+  const safePlatformOrderFee = Math.round(platformOrderFee);
   const affiliateFee = Math.round(salePrice * (affiliatePercent / 100));
 
   const totalSuccessfulOrderCost = Math.round(
     productCost +
       platformFee +
+      safePlatformOrderFee +
       affiliateFee +
       adCost +
       packagingCost +
@@ -62,6 +66,9 @@ export function calculateReturnLoss(input: OrderInput): OrderAnalysis {
     productCost * (1 - resaleRecoveryPercent / 100),
   );
 
+  // Fixed platform/order fees are intentionally NOT copied into return loss here.
+  // Whether those fees are refundable depends on platform policy and order state.
+  // Sellers can enter any non-refundable amount explicitly in nonRefundableFees.
   const grossReturnLoss = Math.round(
     adCost +
       packagingCost +
@@ -95,6 +102,7 @@ export function calculateReturnLoss(input: OrderInput): OrderAnalysis {
 
   return {
     platformFee,
+    platformOrderFee: safePlatformOrderFee,
     affiliateFee,
     totalSuccessfulOrderCost,
     successfulProfit,

@@ -4,6 +4,11 @@ import { DEFAULT_SHOPEE_INPUT, DEFAULT_TIKTOK_INPUT } from '../constants';
 import { calculateReturnLoss } from '../engine/calculateReturnLoss';
 import { serializeStateToUrl, deserializeStateFromUrl } from '../../../lib/url';
 import { saveToStorage, loadFromStorage } from '../../../lib/storage';
+import {
+  FeeSelector,
+  type FeeMode,
+} from '../../fee-engine/components/FeeSelector';
+import type { SellerType } from '../../fee-engine/types';
 
 import { Header } from '../../../components/layout/Header';
 import { Container } from '../../../components/layout/Container';
@@ -38,6 +43,13 @@ export const ReturnLossCalculator: React.FC = () => {
     return DEFAULT_SHOPEE_INPUT;
   });
 
+  const [feeMode, setFeeMode] = useState<FeeMode>(() =>
+    input.platformFeePercent > 0 || input.platformOrderFee > 0
+      ? 'manual'
+      : 'auto',
+  );
+  const [sellerType, setSellerType] = useState<SellerType>('standard');
+  const [categoryId, setCategoryId] = useState('');
   const [isCopied, setIsCopied] = useState(false);
 
   useEffect(() => {
@@ -51,16 +63,52 @@ export const ReturnLossCalculator: React.FC = () => {
 
   const analysis = useMemo(() => calculateReturnLoss(input), [input]);
 
+  const handleApplyFee = useCallback(
+    (totalVariableRate: number, orderProcessingFee: number) => {
+      setInput((prev) => ({
+        ...prev,
+        platformFeePercent: totalVariableRate,
+        platformOrderFee: orderProcessingFee,
+      }));
+    },
+    [],
+  );
+
+  const handleFeeModeChange = (mode: FeeMode) => {
+    setFeeMode(mode);
+    if (mode === 'auto' && !categoryId) {
+      setInput((prev) => ({
+        ...prev,
+        platformFeePercent: 0,
+        platformOrderFee: 0,
+      }));
+    }
+  };
+
   const handlePlatformChange = (platform: Platform) => {
     if (platform === input.platform) return;
-    setInput((prev) => ({ ...prev, platform }));
+
+    setCategoryId('');
+    setSellerType('standard');
+    setInput((prev) => ({
+      ...prev,
+      platform,
+      platformFeePercent: 0,
+      platformOrderFee: 0,
+    }));
   };
 
   const handleSelectPreset = (presetInput: OrderInput) => {
+    setFeeMode('manual');
+    setCategoryId('');
+    setSellerType('standard');
     setInput(presetInput);
   };
 
   const handleReset = () => {
+    setFeeMode('auto');
+    setCategoryId('');
+    setSellerType('standard');
     setInput(input.platform === 'tiktok' ? DEFAULT_TIKTOK_INPUT : DEFAULT_SHOPEE_INPUT);
   };
 
@@ -99,7 +147,7 @@ export const ReturnLossCalculator: React.FC = () => {
           </h1>
 
           <p className="text-sm sm:text-base text-neutral-300 max-w-2xl leading-relaxed">
-            Tính lợi nhuận thực tế khi giao thành công và số tiền bị mất nếu khách trả hàng. ShopGuard V0 dùng đúng các khoản phí bạn nhập, không tự áp biểu phí của sàn.
+            Chọn sàn, loại shop và ngành hàng để ShopGuard tự áp biểu phí đã lưu. Bạn vẫn có thể chuyển sang nhập thủ công nếu shop có ưu đãi hoặc chương trình riêng.
           </p>
 
           <a
@@ -115,7 +163,21 @@ export const ReturnLossCalculator: React.FC = () => {
 
         <div id="calculator-form" className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           <div className="lg:col-span-7 flex flex-col gap-6">
-            <CalculatorForm input={input} onChange={setInput} />
+            <FeeSelector
+              platform={input.platform}
+              mode={feeMode}
+              sellerType={sellerType}
+              categoryId={categoryId}
+              onModeChange={handleFeeModeChange}
+              onSellerTypeChange={setSellerType}
+              onCategoryChange={setCategoryId}
+              onApplyFee={handleApplyFee}
+            />
+            <CalculatorForm
+              input={input}
+              feeMode={feeMode}
+              onChange={setInput}
+            />
             <CostBreakdown analysis={analysis} input={input} />
           </div>
 

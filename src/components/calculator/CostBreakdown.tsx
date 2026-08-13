@@ -12,7 +12,8 @@ export const CostBreakdown: React.FC<CostBreakdownProps> = ({ analysis, input })
   const breakdownItems = [
     { label: 'Giá bán niêm yết', amount: input.salePrice, type: 'revenue' },
     { label: 'Giá vốn hàng bán (COGS)', amount: -input.productCost, type: 'cost' },
-    { label: `Phí sàn (${input.platformFeePercent}%)`, amount: -analysis.platformFee, type: 'cost' },
+    { label: `Phí sàn biến đổi (${input.platformFeePercent}%)`, amount: -analysis.platformFee, type: 'cost' },
+    { label: 'Phí cố định / xử lý đơn', amount: -analysis.platformOrderFee, type: 'cost' },
     { label: `Affiliate / KOC (${input.affiliatePercent}%)`, amount: -analysis.affiliateFee, type: 'cost' },
     { label: 'Quảng cáo (Ad CPA)', amount: -input.adCost, type: 'cost' },
     { label: 'Chi phí đóng gói', amount: -input.packagingCost, type: 'cost' },
@@ -49,12 +50,12 @@ export const CostBreakdown: React.FC<CostBreakdownProps> = ({ analysis, input })
           const isReturnCost = item.type === 'returnCost';
 
           return (
-            <div key={item.label} className="py-2 flex items-center justify-between">
+            <div key={item.label} className="py-2 flex items-center justify-between gap-4">
               <span className={`font-medium ${isReturnCost ? 'text-red-300' : 'text-neutral-300'}`}>
                 {item.label}
               </span>
               <span
-                className={`font-mono font-bold ${
+                className={`font-mono font-bold shrink-0 ${
                   item.type === 'revenue'
                     ? 'text-white'
                     : item.type === 'reimbursement'
