@@ -1,11 +1,10 @@
 import { OrderInput } from './types';
 
-export const DEFAULT_SHOPEE_INPUT: OrderInput = {
-  platform: 'shopee',
+const BASE_INPUT: Omit<OrderInput, 'platform'> = {
   salePrice: 150000,
   productCost: 65000,
-  platformFeePercent: 10,
-  affiliatePercent: 5,
+  platformFeePercent: 0,
+  affiliatePercent: 0,
   adCost: 20000,
   packagingCost: 4000,
   outboundShippingCost: 5000,
@@ -15,17 +14,12 @@ export const DEFAULT_SHOPEE_INPUT: OrderInput = {
   resaleRecoveryPercent: 80,
 };
 
+export const DEFAULT_SHOPEE_INPUT: OrderInput = {
+  ...BASE_INPUT,
+  platform: 'shopee',
+};
+
 export const DEFAULT_TIKTOK_INPUT: OrderInput = {
+  ...BASE_INPUT,
   platform: 'tiktok',
-  salePrice: 180000,
-  productCost: 75000,
-  platformFeePercent: 11,
-  affiliatePercent: 6,
-  adCost: 25000,
-  packagingCost: 5000,
-  outboundShippingCost: 6000,
-  returnShippingCost: 12000,
-  nonRefundableFees: 0,
-  reimbursementAmount: 0,
-  resaleRecoveryPercent: 70,
 };
