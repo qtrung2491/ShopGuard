@@ -5,6 +5,7 @@ export interface OrderInput {
   salePrice: number;
   productCost: number;
   platformFeePercent: number;
+  platformOrderFee: number;
   affiliatePercent: number;
   adCost: number;
   packagingCost: number;
@@ -26,6 +27,7 @@ export interface AnalysisWarning {
 
 export interface OrderAnalysis {
   platformFee: number;
+  platformOrderFee: number;
   affiliateFee: number;
   totalSuccessfulOrderCost: number;
   successfulProfit: number;
