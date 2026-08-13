@@ -1,15 +1,21 @@
 import React from 'react';
 import { OrderInput } from '../../features/return-loss/types';
+import { FeeMode } from '../../features/fee-engine/components/FeeSelector';
 import { NumberInput } from '../ui/NumberInput';
 import { Slider } from '../ui/Slider';
-import { ShoppingCart, RotateCcw } from 'lucide-react';
+import { ShoppingCart, RotateCcw, LockKeyhole } from 'lucide-react';
 
 interface CalculatorFormProps {
   input: OrderInput;
+  feeMode: FeeMode;
   onChange: (updated: OrderInput) => void;
 }
 
-export const CalculatorForm: React.FC<CalculatorFormProps> = ({ input, onChange }) => {
+export const CalculatorForm: React.FC<CalculatorFormProps> = ({
+  input,
+  feeMode,
+  onChange,
+}) => {
   const updateField = <K extends keyof OrderInput>(field: K, val: OrderInput[K]) => {
     onChange({
       ...input,
@@ -30,9 +36,51 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({ input, onChange 
           </div>
         </div>
 
-        <div className="rounded-xl border border-amber-900/50 bg-amber-950/20 px-3.5 py-3 text-[11px] leading-relaxed text-amber-200/90">
-          V0 chưa tự áp biểu phí Shopee/TikTok. Hãy nhập tổng tỷ lệ phí thực tế đang áp dụng cho shop hoặc đơn hàng của bạn.
-        </div>
+        {feeMode === 'auto' ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 rounded-xl border border-neutral-800 bg-neutral-950/60 p-3.5">
+            <div>
+              <span className="flex items-center gap-1.5 text-[11px] text-neutral-500">
+                <LockKeyhole className="w-3 h-3" />
+                Phí biến đổi đang tự áp
+              </span>
+              <strong className="mt-1 block font-mono text-sm text-lime-300">
+                {input.platformFeePercent}%
+              </strong>
+            </div>
+            <div>
+              <span className="flex items-center gap-1.5 text-[11px] text-neutral-500">
+                <LockKeyhole className="w-3 h-3" />
+                Phí cố định / đơn
+              </span>
+              <strong className="mt-1 block font-mono text-sm text-lime-300">
+                {input.platformOrderFee.toLocaleString('vi-VN')}đ
+              </strong>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <NumberInput
+              id="platformFeePercent"
+              label={`Tổng phí sàn biến đổi (${input.platform === 'shopee' ? 'Shopee' : 'TikTok'}) %`}
+              value={input.platformFeePercent}
+              onChange={(v) => updateField('platformFeePercent', v)}
+              isPercent
+              suffix="%"
+              helpText="Hoa hồng ngành + phí giao dịch áp dụng cho shop"
+              quickStep={1}
+              max={100}
+            />
+
+            <NumberInput
+              id="platformOrderFee"
+              label="Phí cố định / xử lý đơn"
+              value={input.platformOrderFee}
+              onChange={(v) => updateField('platformOrderFee', v)}
+              helpText="Ví dụ phí hạ tầng / phí xử lý đơn"
+              quickStep={1000}
+            />
+          </div>
+        )}
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <NumberInput
@@ -51,18 +99,6 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({ input, onChange 
             onChange={(v) => updateField('productCost', v)}
             helpText="Chi phí nhập / sản xuất 1 sản phẩm"
             quickStep={10000}
-          />
-
-          <NumberInput
-            id="platformFeePercent"
-            label={`Tổng phí sàn (${input.platform === 'shopee' ? 'Shopee' : 'TikTok'}) %`}
-            value={input.platformFeePercent}
-            onChange={(v) => updateField('platformFeePercent', v)}
-            isPercent
-            suffix="%"
-            helpText="Nhập theo phí thực tế của shop; không phải preset chính thức"
-            quickStep={1}
-            max={100}
           />
 
           <NumberInput
@@ -132,7 +168,7 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({ input, onChange 
             label="Phí không được sàn hoàn trả"
             value={input.nonRefundableFees}
             onChange={(v) => updateField('nonRefundableFees', v)}
-            helpText="Các khoản phí cố định sàn không trả lại"
+            helpText="Nhập phần phí thực tế không được hoàn ở trạng thái này"
             quickStep={1000}
           />
 
