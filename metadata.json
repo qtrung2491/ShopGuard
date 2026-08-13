@@ -1,0 +1,6 @@
+{
+  "name": "ShopGuard",
+  "description": "Tính lỗ đơn hoàn, lợi nhuận thực tế, giá hòa vốn, CPA quảng cáo và affiliate cho người bán Shopee & TikTok Shop.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
