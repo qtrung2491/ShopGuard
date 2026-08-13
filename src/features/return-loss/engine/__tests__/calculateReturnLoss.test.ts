@@ -14,6 +14,7 @@ describe('Financial Engine Tests', () => {
     salePrice: 100000,
     productCost: 40000,
     platformFeePercent: 10,
+    platformOrderFee: 0,
     affiliatePercent: 5,
     adCost: 10000,
     packagingCost: 2000,
@@ -27,9 +28,30 @@ describe('Financial Engine Tests', () => {
   it('calculates a normal profitable order', () => {
     const result = calculateReturnLoss(baseInput);
     expect(result.platformFee).toBe(10000);
+    expect(result.platformOrderFee).toBe(0);
     expect(result.affiliateFee).toBe(5000);
     expect(result.successfulProfit).toBe(30000);
     expect(result.successfulMarginPercent).toBe(30);
+  });
+
+  it('includes fixed platform order fee in profit and break-even', () => {
+    const input = { ...baseInput, platformOrderFee: 3000 };
+    const result = calculateReturnLoss(input);
+
+    expect(result.platformOrderFee).toBe(3000);
+    expect(result.successfulProfit).toBe(27000);
+    expect(calculateBreakEvenAdCPA(input)).toBe(37000);
+    expect(calculateMaxAffiliatePercent(input)).toBe(32);
+  });
+
+  it('does not automatically copy the fixed order fee into return loss', () => {
+    const withoutFixedFee = calculateReturnLoss(baseInput);
+    const withFixedFee = calculateReturnLoss({
+      ...baseInput,
+      platformOrderFee: 3000,
+    });
+
+    expect(withFixedFee.returnedOrderLoss).toBe(withoutFixedFee.returnedOrderLoss);
   });
 
   it('detects a loss-making order', () => {
@@ -102,6 +124,7 @@ describe('Financial Engine Tests', () => {
       ...baseInput,
       salePrice: Number.NaN,
       productCost: -100,
+      platformOrderFee: Number.POSITIVE_INFINITY,
       adCost: Number.POSITIVE_INFINITY,
       platformFeePercent: 150,
       affiliatePercent: -20,
@@ -109,6 +132,7 @@ describe('Financial Engine Tests', () => {
 
     expect(result.successfulMarginPercent).toBe(0);
     expect(result.platformFee).toBe(0);
+    expect(result.platformOrderFee).toBe(0);
     expect(result.affiliateFee).toBe(0);
     expect(Number.isFinite(result.returnedOrderLoss)).toBe(true);
   });
@@ -128,9 +152,11 @@ describe('Financial Engine Tests', () => {
       };
     }
 
-    const url = serializeStateToUrl(baseInput);
+    const input = { ...baseInput, platformOrderFee: 3000 };
+    const url = serializeStateToUrl(input);
     expect(url).toContain('price=100000');
     expect(url).toContain('cost=40000');
+    expect(url).toContain('orderfee=3000');
     expect(url).toContain('p=shopee');
 
     const searchPart = url.split('?')[1] ?? '';
@@ -139,6 +165,7 @@ describe('Financial Engine Tests', () => {
     const parsed = deserializeStateFromUrl();
     expect(parsed?.salePrice).toBe(100000);
     expect(parsed?.productCost).toBe(40000);
+    expect(parsed?.platformOrderFee).toBe(3000);
     expect(parsed?.platform).toBe('shopee');
   });
 });
