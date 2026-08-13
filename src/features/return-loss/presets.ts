@@ -10,8 +10,8 @@ export interface Preset {
 export const PRESETS: Preset[] = [
   {
     id: 'ao-19k',
-    name: 'Áo 19k (Rủi ro hoàn)',
-    description: 'Trường hợp thực tế seller bán áo 19.000đ khi bị khách hoàn trả',
+    name: 'Áo 19k (demo)',
+    description: 'Ví dụ minh họa case áo 19.000đ; hãy chỉnh phí theo shop thực tế',
     input: {
       platform: 'shopee',
       salePrice: 19000,
@@ -29,8 +29,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'thoi-trang-shopee',
-    name: 'Thời trang Shopee chuẩn',
-    description: 'Sản phẩm thời trang 150.000đ bán trên Shopee',
+    name: 'Thời trang Shopee (demo)',
+    description: 'Ví dụ minh họa; các tỷ lệ phí không phải biểu phí chính thức',
     input: {
       platform: 'shopee',
       salePrice: 150000,
@@ -48,8 +48,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'my-pham-tiktok',
-    name: 'Mỹ phẩm TikTok Shop',
-    description: 'Sản phẩm mỹ phẩm 250.000đ chạy Ads + Affiliate TikTok',
+    name: 'Mỹ phẩm TikTok (demo)',
+    description: 'Ví dụ minh họa Ads + Affiliate; hãy thay bằng chi phí thực tế của shop',
     input: {
       platform: 'tiktok',
       salePrice: 250000,
@@ -67,8 +67,8 @@ export const PRESETS: Preset[] = [
   },
   {
     id: 'cong-kenh-hong-100',
-    name: 'Đồ gia dụng (Hoàn hỏng 100%)',
-    description: 'Hàng cồng kềnh/dễ vỡ bị hỏng hoàn toàn khi vận chuyển hoàn',
+    name: 'Hàng dễ vỡ (demo)',
+    description: 'Ví dụ hàng bị hỏng hoàn toàn khi quay về; số phí chỉ để minh họa',
     input: {
       platform: 'shopee',
       salePrice: 320000,
