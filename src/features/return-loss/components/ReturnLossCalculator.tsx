@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { OrderInput, Platform } from '../types';
 import { DEFAULT_SHOPEE_INPUT, DEFAULT_TIKTOK_INPUT } from '../constants';
 import { calculateReturnLoss } from '../engine/calculateReturnLoss';
@@ -15,10 +15,9 @@ import { ResultPanel } from '../../../components/calculator/ResultPanel';
 import { CostBreakdown } from '../../../components/calculator/CostBreakdown';
 import { FutureTeaserCard } from './FutureTeaserCard';
 
-import { ArrowDown, AlertCircle } from 'lucide-react';
+import { ArrowDown } from 'lucide-react';
 
 export const ReturnLossCalculator: React.FC = () => {
-  // Initialize state with priority: URL query params > LocalStorage > Default Shopee preset
   const [input, setInput] = useState<OrderInput>(() => {
     const urlState = deserializeStateFromUrl();
     if (urlState && Object.keys(urlState).length > 0) {
@@ -41,7 +40,6 @@ export const ReturnLossCalculator: React.FC = () => {
 
   const [isCopied, setIsCopied] = useState(false);
 
-  // Sync state changes to localStorage & URL query params
   useEffect(() => {
     saveToStorage(input);
 
@@ -51,57 +49,33 @@ export const ReturnLossCalculator: React.FC = () => {
     }
   }, [input]);
 
-  // Memoized financial analysis
-  const analysis = useMemo(() => {
-    return calculateReturnLoss(input);
-  }, [input]);
+  const analysis = useMemo(() => calculateReturnLoss(input), [input]);
 
-  // Platform switch handler
   const handlePlatformChange = (platform: Platform) => {
     if (platform === input.platform) return;
-
-    if (platform === 'shopee') {
-      setInput((prev) => ({
-        ...prev,
-        platform: 'shopee',
-        platformFeePercent: prev.platformFeePercent === DEFAULT_TIKTOK_INPUT.platformFeePercent ? DEFAULT_SHOPEE_INPUT.platformFeePercent : prev.platformFeePercent,
-      }));
-    } else {
-      setInput((prev) => ({
-        ...prev,
-        platform: 'tiktok',
-        platformFeePercent: prev.platformFeePercent === DEFAULT_SHOPEE_INPUT.platformFeePercent ? DEFAULT_TIKTOK_INPUT.platformFeePercent : prev.platformFeePercent,
-      }));
-    }
+    setInput((prev) => ({ ...prev, platform }));
   };
 
-  // Preset select handler
   const handleSelectPreset = (presetInput: OrderInput) => {
     setInput(presetInput);
   };
 
-  // Reset to default platform preset
   const handleReset = () => {
-    if (input.platform === 'tiktok') {
-      setInput(DEFAULT_TIKTOK_INPUT);
-    } else {
-      setInput(DEFAULT_SHOPEE_INPUT);
-    }
+    setInput(input.platform === 'tiktok' ? DEFAULT_TIKTOK_INPUT : DEFAULT_SHOPEE_INPUT);
   };
 
-  // Copy shareable link
   const handleCopyLink = useCallback(() => {
     if (typeof window === 'undefined') return;
+
     const fullUrl = `${window.location.origin}${serializeStateToUrl(input)}`;
-    navigator.clipboard.writeText(fullUrl).then(() => {
+    void navigator.clipboard.writeText(fullUrl).then(() => {
       setIsCopied(true);
-      setTimeout(() => setIsCopied(false), 2000);
+      window.setTimeout(() => setIsCopied(false), 2000);
     });
   }, [input]);
 
   return (
     <div className="min-h-screen bg-neutral-950 text-neutral-100 flex flex-col selection:bg-lime-400 selection:text-neutral-950">
-      {/* HEADER NAVBAR */}
       <Header
         platform={input.platform}
         onPlatformChange={handlePlatformChange}
@@ -111,7 +85,6 @@ export const ReturnLossCalculator: React.FC = () => {
       />
 
       <Container className="flex-1 flex flex-col gap-8">
-        {/* HERO SECTION */}
         <div className="flex flex-col items-center text-center gap-3 pt-4 pb-2 max-w-3xl mx-auto">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-neutral-900 border border-neutral-800 text-xs font-mono font-medium text-lime-400">
             <span className="w-2 h-2 rounded-full bg-lime-400 animate-pulse" />
@@ -126,7 +99,7 @@ export const ReturnLossCalculator: React.FC = () => {
           </h1>
 
           <p className="text-sm sm:text-base text-neutral-300 max-w-2xl leading-relaxed">
-            Tính lợi nhuận thực tế khi giao thành công và số tiền chính xác bị âm nếu khách trả hàng. Phát hiện các chi phí rò rỉ âm thầm ăn mòn cửa hàng của bạn.
+            Tính lợi nhuận thực tế khi giao thành công và số tiền bị mất nếu khách trả hàng. ShopGuard V0 dùng đúng các khoản phí bạn nhập, không tự áp biểu phí của sàn.
           </p>
 
           <a
@@ -138,29 +111,22 @@ export const ReturnLossCalculator: React.FC = () => {
           </a>
         </div>
 
-        {/* PRESETS BAR */}
         <PresetsBar onSelectPreset={handleSelectPreset} />
 
-        {/* MAIN CALCULATOR GRID */}
-        {/* On desktop: Form | Result. On mobile: Form -> Result */}
         <div id="calculator-form" className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Input Form (7 cols) */}
           <div className="lg:col-span-7 flex flex-col gap-6">
             <CalculatorForm input={input} onChange={setInput} />
             <CostBreakdown analysis={analysis} input={input} />
           </div>
 
-          {/* Right Column: High-Impact Result Panel (5 cols) */}
           <div className="lg:col-span-5 flex flex-col gap-6">
             <ResultPanel analysis={analysis} input={input} />
           </div>
         </div>
 
-        {/* FUTURE TEASER CARD */}
         <FutureTeaserCard />
       </Container>
 
-      {/* FOOTER */}
       <Footer />
     </div>
   );

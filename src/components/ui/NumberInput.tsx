@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 
 interface NumberInputProps {
   id: string;
@@ -39,23 +39,29 @@ export const NumberInput: React.FC<NumberInputProps> = ({
     }
   }, [value, isPercent]);
 
+  const clampValue = (valueToClamp: number) => {
+    const upperBounded = max !== undefined ? Math.min(max, valueToClamp) : valueToClamp;
+    return Math.max(min, upperBounded);
+  };
+
   const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const raw = e.target.value;
-    
-    // Extract numbers
+
     if (isPercent) {
       const cleaned = raw.replace(',', '.').replace(/[^\d.]/g, '');
-      const parsed = parseFloat(cleaned);
-      const val = isNaN(parsed) ? 0 : parsed;
+      const parsed = Number.parseFloat(cleaned);
+      const nextValue = Number.isFinite(parsed) ? parsed : 0;
       setDisplayValue(raw);
-      onChange(Math.max(min, max !== undefined ? Math.min(max, val) : val));
-    } else {
-      const cleaned = raw.replace(/[^\d]/g, '');
-      const val = parseInt(cleaned, 10);
-      const numericVal = isNaN(val) ? 0 : val;
-      setDisplayValue(numericVal === 0 ? '' : numericVal.toLocaleString('vi-VN'));
-      onChange(Math.max(min, numericVal));
+      onChange(clampValue(nextValue));
+      return;
     }
+
+    const cleaned = raw.replace(/[^\d]/g, '');
+    const parsed = Number.parseInt(cleaned, 10);
+    const nextValue = Number.isFinite(parsed) ? parsed : 0;
+    const boundedValue = clampValue(nextValue);
+    setDisplayValue(boundedValue === 0 ? '' : boundedValue.toLocaleString('vi-VN'));
+    onChange(boundedValue);
   };
 
   const handleBlur = () => {
@@ -67,8 +73,7 @@ export const NumberInput: React.FC<NumberInputProps> = ({
   };
 
   const handleAddQuick = (amount: number) => {
-    const newVal = Math.max(min, (value || 0) + amount);
-    onChange(newVal);
+    onChange(clampValue((value || 0) + amount));
   };
 
   return (

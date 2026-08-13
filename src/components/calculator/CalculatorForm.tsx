@@ -2,7 +2,7 @@ import React from 'react';
 import { OrderInput } from '../../features/return-loss/types';
 import { NumberInput } from '../ui/NumberInput';
 import { Slider } from '../ui/Slider';
-import { ShoppingCart, RotateCcw, DollarSign } from 'lucide-react';
+import { ShoppingCart, RotateCcw } from 'lucide-react';
 
 interface CalculatorFormProps {
   input: OrderInput;
@@ -19,7 +19,6 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({ input, onChange 
 
   return (
     <div className="flex flex-col gap-6">
-      {/* SECTION 1: ĐƠN HÀNG THÀNH CÔNG */}
       <div className="rounded-2xl border border-neutral-800 bg-neutral-900/90 p-5 flex flex-col gap-4">
         <div className="flex items-center gap-2 pb-3 border-b border-neutral-800">
           <div className="p-1.5 rounded-lg bg-lime-950/80 text-lime-400 border border-lime-800/50">
@@ -29,6 +28,10 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({ input, onChange 
             <h3 className="text-sm font-bold text-neutral-100">1. Thông tin Đơn hàng & Chi phí</h3>
             <p className="text-[11px] text-neutral-400">Doanh thu, giá vốn và phí khi giao thành công</p>
           </div>
+        </div>
+
+        <div className="rounded-xl border border-amber-900/50 bg-amber-950/20 px-3.5 py-3 text-[11px] leading-relaxed text-amber-200/90">
+          V0 chưa tự áp biểu phí Shopee/TikTok. Hãy nhập tổng tỷ lệ phí thực tế đang áp dụng cho shop hoặc đơn hàng của bạn.
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -52,13 +55,14 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({ input, onChange 
 
           <NumberInput
             id="platformFeePercent"
-            label={`Phí sàn (${input.platform === 'shopee' ? 'Shopee' : 'TikTok'}) %`}
+            label={`Tổng phí sàn (${input.platform === 'shopee' ? 'Shopee' : 'TikTok'}) %`}
             value={input.platformFeePercent}
             onChange={(v) => updateField('platformFeePercent', v)}
             isPercent
             suffix="%"
-            helpText="Gồm phí cố định, dịch vụ, thanh toán"
+            helpText="Nhập theo phí thực tế của shop; không phải preset chính thức"
             quickStep={1}
+            max={100}
           />
 
           <NumberInput
@@ -70,6 +74,7 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({ input, onChange 
             suffix="%"
             helpText="Tỷ lệ hoa hồng trả cho KOC / Tiếp thị"
             quickStep={1}
+            max={100}
           />
 
           <NumberInput
@@ -92,7 +97,6 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({ input, onChange 
         </div>
       </div>
 
-      {/* SECTION 2: KHI KHÁCH TRẢ HÀNG / HOÀN HÀNG */}
       <div className="rounded-2xl border border-neutral-800 bg-neutral-900/90 p-5 flex flex-col gap-4">
         <div className="flex items-center gap-2 pb-3 border-b border-neutral-800">
           <div className="p-1.5 rounded-lg bg-orange-950/80 text-orange-400 border border-orange-800/50">
@@ -137,19 +141,18 @@ export const CalculatorForm: React.FC<CalculatorFormProps> = ({ input, onChange 
             label="Tiền bồi hoàn nhận được"
             value={input.reimbursementAmount}
             onChange={(v) => updateField('reimbursementAmount', v)}
-            helpText="Tiền đền bù thất lạc/hư hỏng từ đơn vị vận chuyển"
+            helpText="Khoản bồi hoàn liên quan trực tiếp tới đơn hoàn"
             quickStep={5000}
           />
         </div>
 
-        {/* Resale Recovery Slider */}
         <div className="mt-2">
           <Slider
             id="resaleRecoveryPercent"
             label="Tỷ lệ khôi phục hàng hóa khi quay về"
             value={input.resaleRecoveryPercent}
             onChange={(v) => updateField('resaleRecoveryPercent', v)}
-            helpText="Kéo về 0% nếu hàng bị móp vỡ/hỏng không bán lại được. 100% nếu sản phẩm còn nguyên vẹn."
+            helpText="0% nếu hàng hỏng/mất hoàn toàn; 100% nếu sản phẩm quay về và bán lại bình thường."
           />
         </div>
       </div>

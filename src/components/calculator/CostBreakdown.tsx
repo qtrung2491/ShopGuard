@@ -1,6 +1,6 @@
 import React from 'react';
 import { OrderAnalysis, OrderInput } from '../../features/return-loss/types';
-import { formatVND, formatPercent } from '../../lib/currency';
+import { formatVND } from '../../lib/currency';
 import { Layers } from 'lucide-react';
 
 interface CostBreakdownProps {
@@ -19,8 +19,16 @@ export const CostBreakdown: React.FC<CostBreakdownProps> = ({ analysis, input })
     { label: 'Ship chiều đi shop trả', amount: -input.outboundShippingCost, type: 'cost' },
     { label: 'Ship hoàn lượt quay về', amount: -input.returnShippingCost, type: 'returnCost' },
     { label: 'Phí không hoàn trả', amount: -input.nonRefundableFees, type: 'returnCost' },
-    { label: `Mất mát giá trị sản phẩm (${100 - input.resaleRecoveryPercent}% hỏng)`, amount: -analysis.inventoryDamageLoss, type: 'returnCost' },
-    { label: 'Tiền bồi hoàn từ Vận chuyển/Sàn', amount: input.reimbursementAmount, type: 'reimbursement' },
+    {
+      label: `Mất mát giá trị sản phẩm (${100 - input.resaleRecoveryPercent}% hỏng)`,
+      amount: -analysis.inventoryDamageLoss,
+      type: 'returnCost',
+    },
+    {
+      label: 'Bồi hoàn được tính vào đơn hoàn',
+      amount: analysis.reimbursementApplied,
+      type: 'reimbursement',
+    },
   ];
 
   return (
@@ -34,32 +42,40 @@ export const CostBreakdown: React.FC<CostBreakdownProps> = ({ analysis, input })
       </div>
 
       <div className="divide-y divide-neutral-800/60 text-xs">
-        {breakdownItems.map((item, idx) => {
+        {breakdownItems.map((item) => {
           if (item.amount === 0 && item.type !== 'revenue') return null;
 
           const isPositive = item.amount > 0;
           const isReturnCost = item.type === 'returnCost';
 
           return (
-            <div key={idx} className="py-2 flex items-center justify-between">
+            <div key={item.label} className="py-2 flex items-center justify-between">
               <span className={`font-medium ${isReturnCost ? 'text-red-300' : 'text-neutral-300'}`}>
                 {item.label}
               </span>
-              <span className={`font-mono font-bold ${
-                item.type === 'revenue'
-                  ? 'text-white'
-                  : item.type === 'reimbursement'
-                  ? 'text-lime-400'
-                  : isReturnCost
-                  ? 'text-red-400'
-                  : 'text-neutral-400'
-              }`}>
+              <span
+                className={`font-mono font-bold ${
+                  item.type === 'revenue'
+                    ? 'text-white'
+                    : item.type === 'reimbursement'
+                      ? 'text-lime-400'
+                      : isReturnCost
+                        ? 'text-red-400'
+                        : 'text-neutral-400'
+                }`}
+              >
                 {isPositive ? `+${formatVND(item.amount)}` : formatVND(item.amount)}
               </span>
             </div>
           );
         })}
       </div>
+
+      {input.reimbursementAmount > analysis.reimbursementApplied && (
+        <p className="text-[11px] leading-relaxed text-neutral-500">
+          Bồi hoàn nhập vào lớn hơn tổn thất trực tiếp. ShopGuard chỉ áp tối đa {formatVND(analysis.grossReturnLoss)} để Return Loss không âm.
+        </p>
+      )}
     </div>
   );
 };
